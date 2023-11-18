@@ -7,11 +7,52 @@ export const useEmployeeStore = defineStore('employee', () => {
   const employees: Ref<Employee[]> = ref([])
   type State = 'Initial' | 'Successfull' | 'Fail'
   const state: Ref<State> = ref('Initial')
-  async function  createEmployee(employee: Employee) {
+
+  const filterEmployee = async (fParam: string[]) => {
     try {
-      console.log("Submitting data", employee)
-      const s = await supabase.from('employees').insert(employee)
-      console.log(s.status, s.data, s.error)
+      if (fParam.length < 1) {
+        await getEmployees()
+        return
+      }
+      const { data } = await supabase.from('employees').select('*').in('position', fParam)
+      employees.value = data as unknown as Employee[]
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function sortSalary(sortValue: string, t?: boolean) {
+    try {
+      const { data } = await supabase
+        .from('employees')
+        .select()
+        .order(sortValue, { ascending: t ?? true })
+      employees.value = data as unknown as Employee[]
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  async function lte10000() {
+    try {
+      const { data } = await supabase.from('employees').select().lte('salary', 10000)
+      employees.value = data as unknown as Employee[]
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function gte20000() {
+    try {
+      const { data } = await supabase.from('employees').select().gte('salary', 20000)
+      employees.value = data as unknown as Employee[]
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  async function createEmployee(employee: Employee) {
+    try {
+      await supabase.from('employees').insert(employee)
       state.value = 'Successfull'
     } catch (e) {
       console.log(e)
@@ -23,5 +64,5 @@ export const useEmployeeStore = defineStore('employee', () => {
     employees.value = data as unknown as Employee[]
   }
 
-  return { employees, getEmployees, createEmployee , state}
+  return { employees, getEmployees, createEmployee, state, filterEmployee, lte10000, gte20000, sortSalary }
 })
