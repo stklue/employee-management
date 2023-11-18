@@ -1,14 +1,22 @@
 export interface Employee {
-    id: string,
-    name: string,
-    surname: string,
-    profile_url?: string,
-    employeeno: string,
-    position: string,
-    salary: number,
-    line_manager?: string,
-    created_at: Date
+  id: string
+  name: string
+  surname: string
+  profile_url?: string,
+  birthdate: string,
+  employeeno: string
+  position: string
+  salary: number
+  line_manager?: string
+  created_at?: Date
 }
 
-
-export const emptyEmplpyee = {id: "", employeeno:"",position:"Developer", salary: 20000} as Employee 
+export const emptyEmployee = {
+  id: '',
+  name: '',
+  surname: '',
+  employeeno: '',
+  position: 'Developer',
+  birthdate: '',
+  salary: 20000,
+} as Employee

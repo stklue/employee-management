@@ -1,19 +1,45 @@
 <script setup lang="ts">
-import { ref, type Ref } from 'vue'
+import { onMounted, ref, watch, type Ref } from 'vue'
 import { useEmployeeStore } from '@/stores/employee'
-import { uuid } from 'vue3-uuid'
+import { useRoute } from 'vue-router'
+import { type Employee, emptyEmployee } from '@/types/employee'
 const store = useEmployeeStore()
 
-const name = ref('')
-const surname = ref('')
-const position = ref('')
-const birthdate = ref('')
-const salary = ref(0)
-const uuid_id = ref(uuid.v4())
-const uuid_employee = ref(uuid.v4())
+const route = useRoute()
+
+const employee: Ref<Employee> = ref(emptyEmployee)
+
+const name = ref(employee.value.name)
+const surname = ref(employee.value.surname)
+const position = ref(employee.value.position)
+const birthdate = ref(employee.value.birthdate)
+const salary = ref(employee.value.salary)
+const line_manager = ref(employee.value.line_manager)
 
 type Loading = 'Initial' | 'Loading' | 'Finished'
 const loading: Ref<Loading> = ref('Initial')
+
+onMounted(async () => {
+  const id = route.params.id as string
+  employee.value = await store.getEmployee(id)
+  name.value = employee.value.name
+  surname.value = employee.value.surname
+  position.value = employee.value.position
+  salary.value = employee.value.salary
+  birthdate.value = employee.value.birthdate
+  line_manager.value = employee.value.line_manager
+})
+
+watch(
+  () => route.params.id,
+  async (_, __) => {
+    if (route.name === 'EditView') {
+      employee.value = await store.getEmployee(route.params.id as string)
+    } else {
+      return {}
+    }
+  }
+)
 
 const submit = () => {
   if (
@@ -22,18 +48,19 @@ const submit = () => {
     position.value.length &&
     birthdate.value.length
   ) {
-    const employee = {
-      id: uuid_id.value,
-      employeeno: uuid_employee.value,
+    const e = {
+      id: employee.value.id,
+      employeeno: employee.value.employeeno,
       name: name.value,
       surname: surname.value,
       birthdate: birthdate.value,
       position: position.value,
-      created_at: new Date(),
-      salary: salary.value
+      created_at: employee.value.created_at,
+      salary: salary.value,
+      line_manager: line_manager.value
     }
     loading.value = 'Loading'
-    store.createEmployee(employee)
+    store.updateEmployee(e)
     loading.value = 'Finished'
   } else {
     alert('Fields Should not be empty')
@@ -95,6 +122,19 @@ const submit = () => {
             v-model="salary"
             id="salary"
             placeholder="Enter salary"
+            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+          />
+        </div>
+        <div class="mb-5">
+          <label for="line manager" class="mb-3 block text-base font-medium text-[#07074D]">
+            Line Manager
+          </label>
+          <input
+            type="text"
+            name="line manager"
+            v-model="line_manager"
+            id="line manager"
+            placeholder="Enter Line Manager"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
           />
         </div>
@@ -194,19 +234,21 @@ const submit = () => {
             type="submit"
             class="hover:shadow-form rounded-md bg-[#6A64F1] py-3 px-8 text-base font-semibold text-white outline-none"
           >
-            Create
+            Update
           </button>
         </div>
         <div class="m-4 text-white">
-          <div v-if="store.state === 'Fail'" class="w-full bg-red-500">
-            Failed to create employee.
-          </div>
-          <div v-if="loading === 'Loading'" class="w-full bg-orange-300">Creating ...</div>
-          <div v-if="store.state === 'Successfull'" class="w-full bg-green-500">
-            Employee Created successfully
-          </div>
+
+        <div v-if="store.state === 'Fail'" class="w-full bg-red-500">
+          Failed to update employee.
         </div>
-      </form>
+        <div v-if="loading === 'Loading'" class="w-full bg-orange-300">Updating ...</div>
+        <div v-if="store.state === 'Successfull'" class="w-full bg-green-500">
+          Employee Updated successfully
+        </div>
+    </div>
+
+    </form>
     </div>
   </div>
 </template>
