@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 import { useEmployeeStore } from '@/stores/employee'
 const store = useEmployeeStore()
-  const sortValue = ref()
+const sortValue = ref()
+
+const resetSort = () => {
+  sortValue.value = null
+  store.getEmployees()
+}
 </script>
 
 <template>
@@ -19,7 +24,6 @@ const store = useEmployeeStore()
           v-model="sortValue"
           v-on:change="store.sortSalary('salary')"
           class="h-5 w-5 rounded border-gray-300"
-
         />
 
         <label for="Salary asc" class="ml-3 text-sm font-medium"> Salary asc </label>
@@ -33,7 +37,6 @@ const store = useEmployeeStore()
           v-model="sortValue"
           v-on:change="store.sortSalary('salary', false)"
           class="h-5 w-5 rounded border-gray-300"
-
         />
 
         <label for="Salary desc" class="ml-3 text-sm font-medium"> Salary desc </label>
@@ -47,14 +50,15 @@ const store = useEmployeeStore()
           v-model="sortValue"
           v-on:change="store.sortSalary('line_manager')"
           class="h-5 w-5 rounded border-gray-300"
-
         />
 
         <label for="New" class="ml-3 text-sm font-medium"> Line Manager </label>
       </div>
 
       <div class="pt-2">
-        <button type="button" class="text-xs text-gray-500 underline">Reset</button>
+        <button 
+        @click="resetSort"
+        type="button" class="text-xs text-gray-500 underline">Reset</button>
       </div>
     </div>
   </fieldset>

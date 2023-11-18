@@ -32,8 +32,12 @@ export const useEmployeeStore = defineStore('employee', () => {
       console.log(e)
     }
   }
-  async function lte10000() {
+  async function lte10000(fParam: string[]) {
     try {
+      if (fParam.length < 1) {
+        await getEmployees()
+        return
+      }
       const { data } = await supabase.from('employees').select().lte('salary', 10000)
       employees.value = data as unknown as Employee[]
     } catch (e) {
@@ -41,9 +45,13 @@ export const useEmployeeStore = defineStore('employee', () => {
     }
   }
 
-  async function gte20000() {
+  async function gte20000(fParam: string[]) {
     try {
-      const { data } = await supabase.from('employees').select().gte('salary', 20000)
+      if (fParam.length < 1) {
+        await getEmployees()
+        return
+      }
+      const { data } = await supabase.from('employees').select().lte('salary', 20000)
       employees.value = data as unknown as Employee[]
     } catch (e) {
       console.log(e)
