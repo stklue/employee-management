@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, type Ref } from 'vue'
 import { useEmployeeStore } from '@/stores/employee'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { type Employee, emptyEmployee } from '@/types/employee'
 const store = useEmployeeStore()
 
@@ -66,6 +66,13 @@ const submit = () => {
     alert('Fields Should not be empty')
   }
 }
+
+const router = useRouter()
+
+const deleteEmp = async (id: string) => {
+    await store.deleteEmployee(id)
+    router.replace("/")
+} 
 </script>
 
 <template>
@@ -235,6 +242,15 @@ const submit = () => {
             class="hover:shadow-form rounded-md bg-[#6A64F1] py-3 px-8 text-base font-semibold text-white outline-none"
           >
             Update
+          </button>
+        </div>
+        <div>
+          <button
+            type="button"
+            @click="deleteEmp(employee.id)"
+            class="hover:shadow-form rounded-md bg-[#f17464] my-4 w-full py-3 px-8 text-base font-semibold text-white outline-none"
+          >
+            Delete Employee
           </button>
         </div>
         <div class="m-4 text-white">

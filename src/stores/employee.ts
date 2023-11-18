@@ -50,14 +50,20 @@ export const useEmployeeStore = defineStore('employee', () => {
     try {
       const { data } = await supabase.from('employees').select().eq('id', id).single()
       employee.value = data as unknown as Employee
-      
+
       return employee.value
     } catch (e) {
       console.log(e)
       return emptyEmployee
     }
   }
-
+  async function deleteEmployee(id: string) {
+    try {
+      await supabase.from('employees').delete().eq('id', id)
+    } catch (e) {
+      console.log(e)
+    }
+  }
 
   async function gte20000(fParam: string[]) {
     try {
@@ -84,8 +90,8 @@ export const useEmployeeStore = defineStore('employee', () => {
   async function updateEmployee(employee: Employee) {
     try {
       const { data } = await supabase.from('employees').upsert(employee)
-      console.log("This was the data returned: ", data);
-      
+      console.log('This was the data returned: ', data)
+
       state.value = 'Successfull'
     } catch (e) {
       console.log(e)
@@ -97,5 +103,17 @@ export const useEmployeeStore = defineStore('employee', () => {
     employees.value = data as unknown as Employee[]
   }
 
-  return { employees, getEmployees, createEmployee, state, filterEmployee, lte10000, gte20000, sortSalary, getEmployee , updateEmployee}
+  return {
+    employees,
+    getEmployees,
+    createEmployee,
+    state,
+    filterEmployee,
+    lte10000,
+    gte20000,
+    sortSalary,
+    getEmployee,
+    deleteEmployee,
+    updateEmployee
+  }
 })
