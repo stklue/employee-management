@@ -9,6 +9,7 @@ export interface Employee {
   salary: number
   line_manager?: string
   created_at?: Date
+  subordinates?: Employee[]
 }
 
 export const emptyEmployee = {
@@ -19,4 +20,5 @@ export const emptyEmployee = {
   position: 'Developer',
   birthdate: '',
   salary: 20000,
+  subordinates: []
 } as Employee

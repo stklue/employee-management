@@ -59,9 +59,14 @@ const submit = () => {
       salary: salary.value,
       line_manager: line_manager.value
     }
-    loading.value = 'Loading'
-    store.updateEmployee(e)
-    loading.value = 'Finished'
+    validateLineManager()
+    if(!valid.value) {
+      alert("Employee cannot be their own line manager.")
+    } else {
+      loading.value = 'Loading'
+      store.updateEmployee(e)
+      loading.value = 'Finished'
+    }
   } else {
     alert('Fields Should not be empty')
   }
@@ -70,9 +75,19 @@ const submit = () => {
 const router = useRouter()
 
 const deleteEmp = async (id: string) => {
-    await store.deleteEmployee(id)
-    router.replace("/")
-} 
+  await store.deleteEmployee(id)
+  router.replace('/')
+}
+
+const valid = ref(false)
+
+const validateLineManager = () => {
+  if (line_manager.value?.includes(name.value) || line_manager.value?.includes(surname.value)) {
+    valid.value = false
+  } else {
+    valid.value = true
+  }
+}
 </script>
 
 <template>
@@ -116,7 +131,8 @@ const deleteEmp = async (id: string) => {
           >
             <option disabled value="">Please select position</option>
             <option>Developer</option>
-            <option>Architect</option>
+            <option>Jr Developer</option>
+            <option>Line Manager</option>
           </select>
         </div>
         <div class="mb-5">
@@ -254,17 +270,15 @@ const deleteEmp = async (id: string) => {
           </button>
         </div>
         <div class="m-4 text-white">
-
-        <div v-if="store.state === 'Fail'" class="w-full bg-red-500">
-          Failed to update employee.
+          <div v-if="store.state === 'Fail'" class="w-full bg-red-500">
+            Failed to update employee.
+          </div>
+          <div v-if="loading === 'Loading'" class="w-full bg-orange-300">Updating ...</div>
+          <div v-if="store.state === 'Successfull'" class="w-full bg-green-500">
+            Employee Updated successfully
+          </div>
         </div>
-        <div v-if="loading === 'Loading'" class="w-full bg-orange-300">Updating ...</div>
-        <div v-if="store.state === 'Successfull'" class="w-full bg-green-500">
-          Employee Updated successfully
-        </div>
-    </div>
-
-    </form>
+      </form>
     </div>
   </div>
 </template>

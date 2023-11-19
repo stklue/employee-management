@@ -3,6 +3,23 @@ import { defineStore } from 'pinia'
 import { supabase } from '../lib/supabaseClient'
 import { emptyEmployee, type Employee } from '../types/employee'
 
+// function buildOrgHierachy(empl: Employee[]){
+//   let data = {}
+
+// }
+export interface EmployeeGraph {
+  employees: Array<Employee>
+}
+
+export const emptyGraph = {employees: []} as EmployeeGraph
+
+
+export interface HierarchyNode {
+  manager: Employee,
+  id: string,
+  children: Array<Employee>
+}
+
 export const useEmployeeStore = defineStore('employee', () => {
   const employees: Ref<Employee[]> = ref([])
   type State = 'Initial' | 'Successfull' | 'Fail'
@@ -81,10 +98,8 @@ export const useEmployeeStore = defineStore('employee', () => {
   async function createEmployee(employee: Employee) {
     try {
       await supabase.from('employees').insert(employee)
-      state.value = 'Successfull'
     } catch (e) {
       console.log(e)
-      state.value = 'Fail'
     }
   }
   async function updateEmployee(employee: Employee) {
@@ -102,6 +117,51 @@ export const useEmployeeStore = defineStore('employee', () => {
     const { data } = await supabase.from('employees').select()
     employees.value = data as unknown as Employee[]
   }
+  const tree: Ref<Array<HierarchyNode>> = ref([])
+  const graph: Ref<EmployeeGraph> = ref(emptyGraph)
+
+
+  const buildOrgHierachy = async () => {
+    // Employee[] => HierarchyNode[]
+    const line_managers: string[] = []
+    employees.value.forEach(e => {if(!line_managers.includes(e.line_manager as string)) {
+      if (e.line_manager !== null) {
+        line_managers.push(e.line_manager as string)
+      }
+    }})
+
+    
+    line_managers.forEach(async man => {
+      const { data } = await supabase.from('employees').select('*').eq('line_manager', man)
+      const x: Array<Employee> = data as unknown as Employee[]
+      const emp = employees.value.find(e => e.name === man) 
+      const h = {manager: emp, id: man,children: x} as HierarchyNode
+      tree.value.push(h)
+    })
+
+  }
+
+
+  // graph functions
+  function addEmployee(employee: Employee): void {
+    graph.value.employees.push(employee);
+  }
+  
+  function addSubordinate(graph: EmployeeGraph ,manager: Employee, subordinate: Employee): void {
+    manager.subordinates!.push(subordinate);
+  }
+  
+  const dfsTraversal = (graph: EmployeeGraph, startEmployee: Employee, visited: Set<Employee> = new Set()): void => {
+    visited.add(startEmployee);
+  
+    console.log(`${startEmployee.name} ${startEmployee.surname} (${startEmployee.position})`);
+  
+    for (const subordinate of startEmployee.subordinates!) {
+      if (!visited.has(subordinate)) {
+        dfsTraversal(graph, subordinate, visited);
+      }
+    }
+  }
 
   return {
     employees,
@@ -114,6 +174,8 @@ export const useEmployeeStore = defineStore('employee', () => {
     sortSalary,
     getEmployee,
     deleteEmployee,
-    updateEmployee
+    updateEmployee,
+    buildOrgHierachy, 
+    tree,
   }
 })

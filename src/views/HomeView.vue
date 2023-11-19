@@ -1,17 +1,58 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useEmployeeStore } from '../stores/employee'
+import {
+  createEmployee,
+  addEmployee,
+  createEmployeeGraph,
+  addSubordinate,
+  dfsTraversal
+} from '../stores/h'
 import EmployeeFilter from '@/components/EmployeeFilter.vue'
 import EmployeeSort from '@/components/EmployeeSort.vue'
+import OrgHierarchy from '@/components/OrgHierarchy.vue'
 
 const store = useEmployeeStore()
 const loading = ref(false)
+
+const searchVal = ref('')
+
+
+
 
 onMounted(async () => {
   loading.value = true
   await store.getEmployees()
   loading.value = false
+  await store.buildOrgHierachy()
 })
+
+const ceo = ref(createEmployee('John', 'Doe', 'CEO'))
+const cto = ref(createEmployee('Jane', 'Smith', 'CTO'))
+const man = ref(createEmployee('Eva', 'Davis', 'Manager'))
+const dev1 = ref(createEmployee('Alice', 'Johnson', 'Developer'))
+const dev2 = ref(createEmployee('Bob', 'Williams', 'Developer'))
+const emp1 = ref(createEmployee('Chris', 'Brown', 'Employee'))
+const emp2 = ref(createEmployee('Diana', 'Miller', 'Employee'))
+const graph = ref(createEmployeeGraph())
+
+// Assuming you have the 'ceo' employee object
+addEmployee(graph.value, ceo.value)
+addSubordinate(graph.value, ceo.value, cto.value)
+addSubordinate(graph.value, ceo.value, man.value)
+
+const manager = ref(graph.value.employees.get(ceo.value)![0])
+addSubordinate(graph.value, cto.value, dev1.value)
+addSubordinate(graph.value, cto.value, dev2.value)
+console.log('CTO: ', cto.value)
+
+manager.value = graph.value.employees.get(ceo.value)![1]
+addSubordinate(graph.value, man.value, emp1.value )
+addSubordinate(graph.value, man.value, emp2.value)
+
+// Traversing the graph using DFS
+console.log('DFS Traversal:')
+dfsTraversal(graph.value, ceo.value)
 </script>
 
 <template>
@@ -25,25 +66,6 @@ onMounted(async () => {
             <EmployeeFilter />
             <EmployeeSort />
           </form>
-          <div class="">
-            <div class="flex justify-between border-t border-gray-200 px-5 py-3">
-              <button
-                name="reset"
-                type="button"
-                class="rounded text-xs font-medium text-gray-600 underline"
-              >
-                Reset All
-              </button>
-
-              <button
-                name="commit"
-                type="button"
-                class="rounded bg-blue-600 px-5 py-3 text-xs font-medium text-white active:scale-95"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </div>
         </div>
       </section>
       <!-- Right Side -->
@@ -99,6 +121,7 @@ onMounted(async () => {
                 <th scope="col" class="px-6 py-3">Position</th>
                 <th scope="col" class="px-6 py-3">Salary</th>
                 <th scope="col" class="px-6 py-3">Line Manager</th>
+                <th scope="col" class="px-6 py-3">Birth Date</th>
                 <th scope="col" class="px-6 py-3">Action</th>
               </tr>
             </thead>
@@ -126,19 +149,23 @@ onMounted(async () => {
                 <td class="px-6 py-4">{{ employee.surname }}</td>
                 <td class="px-6 py-4">{{ employee.position }}</td>
                 <td class="px-6 py-4">R{{ employee.salary }}</td>
-                <td class="px-6 py-4">Jake Test</td>
+                <td class="px-6 py-4">{{ employee.line_manager ?? 'Unassigned' }}</td>
+                <td class="px-6 py-4">{{ employee.birthdate }}</td>
                 <td class="px-6 py-4">
                   <RouterLink
                     :to="'/edit/' + employee.id"
                     class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >Edit employee</RouterLink
+                    >Edit/Delete</RouterLink
                   >
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <!-- Body -->
+        <!-- Org Chart -->
+        <div>
+          <OrgHierarchy :employee="ceo" :subordinates="graph.employees.get(ceo)!" />
+        </div>
       </section>
     </div>
   </main>
