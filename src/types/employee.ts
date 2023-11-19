@@ -1,6 +1,7 @@
 export interface Employee {
   id: string
   name: string
+  email: string
   surname: string
   profile_url?: string,
   birthdate: string,
@@ -16,6 +17,7 @@ export const emptyEmployee = {
   id: '',
   name: '',
   surname: '',
+  email: '',
   employeeno: '',
   position: 'Developer',
   birthdate: '',

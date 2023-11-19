@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useEmployeeStore } from '../stores/employee'
-import {
-  createEmployee,
-  addEmployee,
-  createEmployeeGraph,
-  addSubordinate,
-  dfsTraversal
-} from '../stores/h'
 import EmployeeFilter from '@/components/EmployeeFilter.vue'
 import EmployeeSort from '@/components/EmployeeSort.vue'
-import OrgHierarchy from '@/components/OrgHierarchy.vue'
+// import OrgHierarchy from '@/components/OrgHierarchy.vue'
+
+
 
 const store = useEmployeeStore()
 const loading = ref(false)
@@ -27,32 +22,7 @@ onMounted(async () => {
   await store.buildOrgHierachy()
 })
 
-const ceo = ref(createEmployee('John', 'Doe', 'CEO'))
-const cto = ref(createEmployee('Jane', 'Smith', 'CTO'))
-const man = ref(createEmployee('Eva', 'Davis', 'Manager'))
-const dev1 = ref(createEmployee('Alice', 'Johnson', 'Developer'))
-const dev2 = ref(createEmployee('Bob', 'Williams', 'Developer'))
-const emp1 = ref(createEmployee('Chris', 'Brown', 'Employee'))
-const emp2 = ref(createEmployee('Diana', 'Miller', 'Employee'))
-const graph = ref(createEmployeeGraph())
 
-// Assuming you have the 'ceo' employee object
-addEmployee(graph.value, ceo.value)
-addSubordinate(graph.value, ceo.value, cto.value)
-addSubordinate(graph.value, ceo.value, man.value)
-
-const manager = ref(graph.value.employees.get(ceo.value)![0])
-addSubordinate(graph.value, cto.value, dev1.value)
-addSubordinate(graph.value, cto.value, dev2.value)
-console.log('CTO: ', cto.value)
-
-manager.value = graph.value.employees.get(ceo.value)![1]
-addSubordinate(graph.value, man.value, emp1.value )
-addSubordinate(graph.value, man.value, emp2.value)
-
-// Traversing the graph using DFS
-console.log('DFS Traversal:')
-dfsTraversal(graph.value, ceo.value)
 </script>
 
 <template>
@@ -118,6 +88,7 @@ dfsTraversal(graph.value, ceo.value)
               <tr>
                 <th scope="col" class="px-6 py-3">Name</th>
                 <th scope="col" class="px-6 py-3">Surname</th>
+                <th scope="col" class="px-6 py-3">Email</th>
                 <th scope="col" class="px-6 py-3">Position</th>
                 <th scope="col" class="px-6 py-3">Salary</th>
                 <th scope="col" class="px-6 py-3">Line Manager</th>
@@ -137,16 +108,18 @@ dfsTraversal(graph.value, ceo.value)
                   scope="row"
                   class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  <img
+                <vue-gravatar class="w-10 h-10 rounded-full" :email="employee.email" :size="30"   />
+                  <!-- <img
                     class="w-10 h-10 rounded-full"
                     src="@/assets/default_profile.jpg"
                     alt="Jese image"
-                  />
+                  /> -->
                   <div class="ps-3">
                     <div class="text-base font-semibold">{{ employee.name }}</div>
                   </div>
                 </th>
                 <td class="px-6 py-4">{{ employee.surname }}</td>
+                <td class="px-6 py-4">{{ employee.email }}</td>
                 <td class="px-6 py-4">{{ employee.position }}</td>
                 <td class="px-6 py-4">R{{ employee.salary }}</td>
                 <td class="px-6 py-4">{{ employee.line_manager ?? 'Unassigned' }}</td>
@@ -162,10 +135,8 @@ dfsTraversal(graph.value, ceo.value)
             </tbody>
           </table>
         </div>
-        <!-- Org Chart -->
-        <div>
-          <OrgHierarchy :employee="ceo" :subordinates="graph.employees.get(ceo)!" />
-        </div>
+        
+       
       </section>
     </div>
   </main>

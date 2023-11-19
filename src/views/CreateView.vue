@@ -9,6 +9,7 @@ const store = useEmployeeStore()
 
 const name = ref('')
 const surname = ref('')
+const email = ref('')
 const position = ref('')
 const birthdate = ref('')
 const salary = ref(0)
@@ -23,6 +24,7 @@ const submit = () => {
   if (
     name.value.length > 0 &&
     surname.value.length &&
+    email.value.length &&
     position.value.length &&
     birthdate.value.length
   ) {
@@ -30,6 +32,7 @@ const submit = () => {
       id: uuid_id.value,
       employeeno: uuid_employee.value,
       name: name.value,
+      email: email.value,
       surname: surname.value,
       birthdate: birthdate.value,
       position: position.value,
@@ -120,6 +123,19 @@ const saveImage = async () => {
             v-model="surname"
             id="surname"
             placeholder="Surname"
+            class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
+          />
+        </div>
+        <div class="mb-5">
+          <label for="email" class="mb-3 block text-base font-medium text-[#07074D]">
+            Email
+          </label>
+          <input
+            type="email"
+            name="email"
+            v-model="email"
+            id="email"
+            placeholder="Email"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
           />
         </div>
