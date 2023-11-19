@@ -5,24 +5,17 @@ import EmployeeFilter from '@/components/EmployeeFilter.vue'
 import EmployeeSort from '@/components/EmployeeSort.vue'
 // import OrgHierarchy from '@/components/OrgHierarchy.vue'
 
-
-
 const store = useEmployeeStore()
 const loading = ref(false)
 
 const searchVal = ref('')
 
 
-
-
 onMounted(async () => {
   loading.value = true
   await store.getEmployees()
   loading.value = false
-  await store.buildOrgHierachy()
 })
-
-
 </script>
 
 <template>
@@ -108,7 +101,12 @@ onMounted(async () => {
                   scope="row"
                   class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                <vue-gravatar class="w-10 h-10 rounded-full" :email="employee.email" :size="30"   />
+                  <vue-gravatar
+                    class="w-10 h-10 rounded-full"
+                    :email="employee.email"
+                    :size="30"
+                    default-image="mp"
+                  />
                   <!-- <img
                     class="w-10 h-10 rounded-full"
                     src="@/assets/default_profile.jpg"
@@ -135,8 +133,6 @@ onMounted(async () => {
             </tbody>
           </table>
         </div>
-        
-       
       </section>
     </div>
   </main>

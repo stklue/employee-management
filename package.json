@@ -13,10 +13,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.4",
-    "d3-org-chart": "^3.1.1",
     "pinia": "^2.1.7",
     "vue": "^3.3.4",
-    "vue-gravatar": "^1.4.1",
     "vue-router": "^4.2.5",
     "vue3-gravatar": "^3.0.0",
     "vue3-uuid": "^1.0.0"
