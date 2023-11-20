@@ -28,16 +28,22 @@ interface Props {
 
       <div class="flex flex-col text-center md:text-left">
         <div class="font-medium text-gray-800">{{ employee.name }} {{ employee.surname }}</div>
-        <div class="text-gray-500 mb-2 whitespace-nowrap">{{ employee.position }}</div>
+        <div class="flex">
+            <div class="text-gray-500 mb-2 whitespace-nowrap">{{ employee.position }}</div>
+            <div
+            class="inline-block h-[20px] mx-2  w-0.5 self-stretch bg-gray-400 opacity-100 dark:opacity-50"
+          ></div>
+            <div class="text-gray-500 mb-2 whitespace-nowrap">R{{ employee.salary }}</div>
+        </div>
         <div class="flex">
           <div class="flex flex-row text-gray-800 my-auto mx-auto md:mx-0">
             <span>{{ employee.email }} </span>
           </div>
           <div
-            class="inline-block h-[25px] mx-2 min-h-[1em] w-0.5 self-stretch bg-gray-800 opacity-100 dark:opacity-50"
+            class="inline-block h-[25px] mx-2 min-h-[1em] w-0.5 self-stretch bg-gray-400 opacity-100 dark:opacity-50"
           ></div>
           <div class="flex flex-row text-gray-800 my-auto mx-auto md:mx-0">
-            <span class="hover:cursor-pointer hover:text-blue-500">Edit/Delete </span>
+            <RouterLink  :to="'/edit/' + employee.id" class="hover:cursor-pointer hover:text-blue-500">Edit/Delete </RouterLink>
           </div>
         </div>
       </div>

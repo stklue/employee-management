@@ -31,31 +31,45 @@ const resetFilters = () => {
       </div>
       <div class="flex items-center">
         <input
-          id="jr developer"
+          id="Manager"
           type="checkbox"
-          name="jr developer"
-          value="Jr Developer"
+          name="Manager"
+          value="Manager"
           v-model="filters"
           v-on:change="store.filterEmployee('position', filters)"
           class="h-5 w-5 rounded border-gray-300"
           
         />
 
-        <label for="jr developer" class="ml-3 text-sm font-medium"> Jr Developer </label>
+        <label for="Manager" class="ml-3 text-sm font-medium"> Manager </label>
       </div>
       <div class="flex items-center">
         <input
-          id="line_manager"
+          id="CTO"
           type="checkbox"
-          name="line_manager"
-          value="Line Manager"
+          name="CTO"
+          value="CTO"
           v-model="filters"
           v-on:change="store.filterEmployee('position',filters)"
           class="h-5 w-5 rounded border-gray-300"
           
         />
 
-        <label for="line_manager" class="ml-3 text-sm font-medium"> Line Manager </label>
+        <label for="CTO" class="ml-3 text-sm font-medium"> CTO </label>
+      </div>
+      <div class="flex items-center">
+        <input
+          id="CEO"
+          type="checkbox"
+          name="CEO"
+          value="CEO"
+          v-model="filters"
+          v-on:change="store.filterEmployee('position',filters)"
+          class="h-5 w-5 rounded border-gray-300"
+          
+        />
+
+        <label for="CEO" class="ml-3 text-sm font-medium"> CEO </label>
       </div>
       <div class="flex items-center">
         <input
