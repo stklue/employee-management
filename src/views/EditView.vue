@@ -19,6 +19,8 @@ const profile = ref(employee.value.profile_url)
 const birthdate = ref(employee.value.birthdate)
 const salary = ref(employee.value.salary)
 const line_manager = ref(employee.value.line_manager)
+const manager_subordinates: Ref<string[]> = ref([])
+const manager = ref(emptyEmployee)
 
 type Loading = 'Initial' | 'Loading' | 'Finished'
 const loading: Ref<Loading> = ref('Initial')
@@ -55,9 +57,9 @@ const submit = async () => {
     position.value.length &&
     birthdate.value.length
   ) {
-    const profileUrl = await saveImage()
-
-    profile.value = profileUrl!
+    if (dropzoneFile.value !== undefined) {
+      profile.value = (await saveImage())!
+    }
 
     const e = {
       id: employee.value.id,
@@ -76,6 +78,13 @@ const submit = async () => {
     if (!valid.value) {
       alert('Employee cannot be their own line manager.')
     } else {
+      if (line_manager.value!.length > 0) {
+        manager.value = await store.getManagerByName(line_manager.value!)
+        manager_subordinates.value.push(employee.value.id)
+        manager.value.subordinates = manager_subordinates.value
+        console.log(manager.value)
+        await store.updateManagerSub(manager.value)
+      }
       loading.value = 'Loading'
       store.updateEmployee(e)
       loading.value = 'Finished'
@@ -133,6 +142,7 @@ const saveImage = async () => {
     return alert('Storage upload: ' + error.message)
   }
   const { data } = supabase.storage.from('employees').getPublicUrl(dataPath.path)
+
   return data.publicUrl
 }
 </script>

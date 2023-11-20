@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import { supabase } from '../lib/supabaseClient'
 import { emptyEmployee, type Employee } from '../types/employee'
 
-
 export interface EmployeeGraph {
   employees: Array<Employee>
 }
@@ -100,8 +99,20 @@ export const useEmployeeStore = defineStore('employee', () => {
   }
   async function updateEmployee(employee: Employee) {
     try {
-      const { data } = await supabase.from('employees').upsert(employee)
-      console.log('This was the data returned: ', data)
+      await supabase.from('employees').upsert(employee)
+
+      state.value = 'Successfull'
+    } catch (e) {
+      console.log(e)
+      state.value = 'Fail'
+    }
+  }
+  async function updateManagerSub(man: Employee) {
+    try {
+       await supabase
+        .from('employees')
+        .update({ subordinates: man.subordinates })
+        .eq('id', man.id)
 
       state.value = 'Successfull'
     } catch (e) {
@@ -118,7 +129,11 @@ export const useEmployeeStore = defineStore('employee', () => {
     employees.value = data as unknown as Employee[]
   }
   const tree: Ref<Array<HierarchyNode>> = ref([])
-  const graph: Ref<EmployeeGraph> = ref(emptyGraph)
+
+  const getManagerByName = async (man: string): Promise<Employee> => {
+    const { data } = await supabase.from('employees').select().eq('name', man).single()
+    return data as unknown as Employee
+  }
 
   const buildOrgHierachy = async () => {
     // Employee[] => HierarchyNode[]
@@ -140,31 +155,6 @@ export const useEmployeeStore = defineStore('employee', () => {
     })
   }
 
-  // graph functions
-  function addEmployee(employee: Employee): void {
-    graph.value.employees.push(employee)
-  }
-
-  function addSubordinate(graph: EmployeeGraph, manager: Employee, subordinate: Employee): void {
-    manager.subordinates!.push(subordinate)
-  }
-
-  const dfsTraversal = (
-    graph: EmployeeGraph,
-    startEmployee: Employee,
-    visited: Set<Employee> = new Set()
-  ): void => {
-    visited.add(startEmployee)
-
-    console.log(`${startEmployee.name} ${startEmployee.surname} (${startEmployee.position})`)
-
-    for (const subordinate of startEmployee.subordinates!) {
-      if (!visited.has(subordinate)) {
-        dfsTraversal(graph, subordinate, visited)
-      }
-    }
-  }
-
   return {
     employees,
     getEmployees,
@@ -178,6 +168,8 @@ export const useEmployeeStore = defineStore('employee', () => {
     getEmployee,
     deleteEmployee,
     updateEmployee,
+    getManagerByName,
+    updateManagerSub,
     buildOrgHierachy,
     tree
   }

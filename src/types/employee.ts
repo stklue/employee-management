@@ -10,7 +10,7 @@ export interface Employee {
   salary: number
   line_manager?: string
   created_at?: Date
-  subordinates?: Employee[]
+  subordinates?: string[]
 }
 
 export const emptyEmployee = {
