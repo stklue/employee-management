@@ -10,7 +10,6 @@ const loading = ref(false)
 
 const searchVal = ref('')
 
-
 onMounted(async () => {
   loading.value = true
   await store.getEmployees()
@@ -101,17 +100,21 @@ onMounted(async () => {
                   scope="row"
                   class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
                 >
+                  <div v-if="employee.profile_url">
+                    <img
+                      class="w-10 h-10 rounded-full"
+                      :src="employee.profile_url"
+                      alt="Profile image"
+                    />
+                  </div>
                   <vue-gravatar
+                    v-else
                     class="w-10 h-10 rounded-full"
                     :email="employee.email"
                     :size="30"
                     default-image="mp"
                   />
-                  <!-- <img
-                    class="w-10 h-10 rounded-full"
-                    src="@/assets/default_profile.jpg"
-                    alt="Jese image"
-                  /> -->
+
                   <div class="ps-3">
                     <div class="text-base font-semibold">{{ employee.name }}</div>
                   </div>

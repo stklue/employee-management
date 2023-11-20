@@ -15,6 +15,7 @@ const name = ref(employee.value.name)
 const surname = ref(employee.value.surname)
 const email = ref(employee.value.email)
 const position = ref(employee.value.position)
+const profile = ref(employee.value.profile_url)
 const birthdate = ref(employee.value.birthdate)
 const salary = ref(employee.value.salary)
 const line_manager = ref(employee.value.line_manager)
@@ -28,6 +29,7 @@ onMounted(async () => {
   name.value = employee.value.name
   surname.value = employee.value.surname
   email.value = employee.value.email
+  profile.value = employee.value.profile_url
   position.value = employee.value.position
   salary.value = employee.value.salary
   birthdate.value = employee.value.birthdate
@@ -45,13 +47,17 @@ watch(
   }
 )
 
-const submit = () => {
+const submit = async () => {
   if (
     name.value.length > 0 &&
     surname.value.length &&
     position.value.length &&
     birthdate.value.length
   ) {
+    const profileUrl = await saveImage()
+    if (profileUrl) {
+      profile.value = profileUrl
+    }
     const e = {
       id: employee.value.id,
       employeeno: employee.value.employeeno,
@@ -60,17 +66,19 @@ const submit = () => {
       email: email.value,
       birthdate: birthdate.value,
       position: position.value,
+      profileUrl: profile.value,
       created_at: employee.value.created_at,
       salary: salary.value,
       line_manager: line_manager.value
     }
     validateLineManager()
-    if(!valid.value) {
-      alert("Employee cannot be their own line manager.")
+    if (!valid.value) {
+      alert('Employee cannot be their own line manager.')
     } else {
       loading.value = 'Loading'
       store.updateEmployee(e)
       loading.value = 'Finished'
+      setInterval(() => { store.state = 'Initial'}, 1000)
     }
   } else {
     alert('Fields Should not be empty')
@@ -93,7 +101,6 @@ const validateLineManager = () => {
     valid.value = true
   }
 }
-
 
 const dropzoneFile: Ref<File | undefined | null> = ref()
 const uploaded = ref(false)
@@ -125,7 +132,6 @@ const saveImage = async () => {
   const { data } = supabase.storage.from('employees').getPublicUrl(dataPath.path)
   return data.publicUrl
 }
-
 </script>
 
 <template>
@@ -158,9 +164,7 @@ const saveImage = async () => {
           />
         </div>
         <div class="mb-5">
-          <label for="email" class="mb-3 block text-base font-medium text-[#07074D]">
-            Email
-          </label>
+          <label for="email" class="mb-3 block text-base font-medium text-[#07074D]"> Email </label>
           <input
             type="email"
             name="email"
@@ -225,8 +229,8 @@ const saveImage = async () => {
           />
         </div>
 
-         <!-- Profile Photo upload -->
-         <DropZone @drop.prevent="drop" @change="selectedFile" :uploaded="uploaded" />
+        <!-- Profile Photo upload -->
+        <DropZone @drop.prevent="drop" @change="selectedFile" :uploaded="uploaded" />
         <span v-if="dropzoneFile">File: {{ dropzoneFile.name }}</span>
         <span v-else>No file selected</span>
 

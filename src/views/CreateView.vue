@@ -11,6 +11,7 @@ const name = ref('')
 const surname = ref('')
 const email = ref('')
 const position = ref('')
+const profile = ref('')
 const birthdate = ref('')
 const salary = ref(0)
 const uuid_id = ref(uuid.v4())
@@ -20,7 +21,7 @@ const line_manager = ref('')
 type Loading = 'Initial' | 'Loading' | 'Finished'
 const loading: Ref<Loading> = ref('Initial')
 const employee: Ref<Employee> = ref(emptyEmployee)
-const submit = () => {
+const submit = async () => {
   if (
     name.value.length > 0 &&
     surname.value.length &&
@@ -28,6 +29,10 @@ const submit = () => {
     position.value.length &&
     birthdate.value.length
   ) {
+    const profileUrl = await saveImage()
+    if (profileUrl) {
+      profile.value = profileUrl
+    }
     const emp = {
       id: uuid_id.value,
       employeeno: uuid_employee.value,
@@ -35,6 +40,7 @@ const submit = () => {
       email: email.value,
       surname: surname.value,
       birthdate: birthdate.value,
+      profileUrl: profile.value,
       position: position.value,
       line_manager: line_manager.value,
       created_at: new Date(),
@@ -49,6 +55,7 @@ const submit = () => {
       loading.value = 'Loading'
       store.createEmployee(employee.value)
       loading.value = 'Finished'
+      setInterval(() => { store.state = 'Initial'}, 1000)
     }
   } else {
     alert('Fields Should not be empty')
