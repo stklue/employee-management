@@ -30,9 +30,8 @@ const submit = async () => {
     birthdate.value.length
   ) {
     const profileUrl = await saveImage()
-    if (profileUrl) {
-      profile.value = profileUrl
-    }
+    profile.value = profileUrl!
+
     const emp = {
       id: uuid_id.value,
       employeeno: uuid_employee.value,
@@ -55,7 +54,9 @@ const submit = async () => {
       loading.value = 'Loading'
       store.createEmployee(employee.value)
       loading.value = 'Finished'
-      setInterval(() => { store.state = 'Initial'}, 1000)
+      setInterval(() => {
+        store.state = 'Initial'
+      }, 2000)
     }
   } else {
     alert('Fields Should not be empty')
@@ -134,9 +135,7 @@ const saveImage = async () => {
           />
         </div>
         <div class="mb-5">
-          <label for="email" class="mb-3 block text-base font-medium text-[#07074D]">
-            Email
-          </label>
+          <label for="email" class="mb-3 block text-base font-medium text-[#07074D]"> Email </label>
           <input
             type="email"
             name="email"

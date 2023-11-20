@@ -21,6 +21,7 @@ export const emptyEmployee = {
   employeeno: '',
   position: 'Developer',
   birthdate: '',
+  profile_url: '',
   salary: 20000,
   subordinates: []
 } as Employee

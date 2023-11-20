@@ -55,9 +55,9 @@ const submit = async () => {
     birthdate.value.length
   ) {
     const profileUrl = await saveImage()
-    if (profileUrl) {
-      profile.value = profileUrl
-    }
+
+    profile.value = profileUrl!
+
     const e = {
       id: employee.value.id,
       employeeno: employee.value.employeeno,
@@ -66,7 +66,7 @@ const submit = async () => {
       email: email.value,
       birthdate: birthdate.value,
       position: position.value,
-      profileUrl: profile.value,
+      profile_url: profile.value,
       created_at: employee.value.created_at,
       salary: salary.value,
       line_manager: line_manager.value
@@ -78,7 +78,9 @@ const submit = async () => {
       loading.value = 'Loading'
       store.updateEmployee(e)
       loading.value = 'Finished'
-      setInterval(() => { store.state = 'Initial'}, 1000)
+      setInterval(() => {
+        store.state = 'Initial'
+      }, 2000)
     }
   } else {
     alert('Fields Should not be empty')
