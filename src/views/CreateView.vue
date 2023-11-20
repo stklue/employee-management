@@ -17,6 +17,8 @@ const salary = ref(0)
 const uuid_id = ref(uuid.v4())
 const uuid_employee = ref(uuid.v4())
 const line_manager = ref('')
+const manager_subordinates: Ref<string[]> = ref([])
+const manager = ref(emptyEmployee)
 
 type Loading = 'Initial' | 'Loading' | 'Finished'
 const loading: Ref<Loading> = ref('Initial')
@@ -29,8 +31,9 @@ const submit = async () => {
     position.value.length &&
     birthdate.value.length
   ) {
-    const profileUrl = await saveImage()
-    profile.value = profileUrl!
+    if (dropzoneFile.value !== undefined) {
+      profile.value = (await saveImage())!
+    }
 
     const emp = {
       id: uuid_id.value,
@@ -43,14 +46,23 @@ const submit = async () => {
       position: position.value,
       line_manager: line_manager.value,
       created_at: new Date(),
-      salary: salary.value
+      salary: salary.value,
+      subordinates: []
     }
     employee.value = emp
     validateLineManager()
     if (!valid.value) {
       alert('Employee cannot be their own line manager.')
-    }
-    {
+    } else {
+      if (line_manager.value !== null) {
+        if (line_manager.value!.length > 0) {
+          manager.value = await store.getManagerByName(line_manager.value!)
+          manager_subordinates.value = manager.value.subordinates
+          manager_subordinates.value.push(employee.value.id)
+          manager.value.subordinates = manager_subordinates.value
+          await store.updateManagerSub(manager.value)
+        }
+      }
       loading.value = 'Loading'
       store.createEmployee(employee.value)
       loading.value = 'Finished'
@@ -103,6 +115,19 @@ const saveImage = async () => {
   const { data } = supabase.storage.from('employees').getPublicUrl(dataPath.path)
   return data.publicUrl
 }
+
+let h = new Map<string, string[]>([
+  ['Developer', ['Manager', 'CTO', 'CEO']],
+  ['Manager', ['CTO', 'CEO']],
+  ['CTO', ['CEO']],
+  ['CEO', []]
+])
+
+const options: Ref<string[]> = ref([])
+
+const lineManagerOptions = () => {
+  options.value = h.get(position.value) as string[]
+}
 </script>
 
 <template>
@@ -150,6 +175,7 @@ const saveImage = async () => {
             Position
           </label>
           <select
+            @change="lineManagerOptions"
             name="position"
             id="position"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
@@ -157,7 +183,9 @@ const saveImage = async () => {
           >
             <option disabled value="">Please select position</option>
             <option>Developer</option>
-            <option>Architect</option>
+            <option>Manager</option>
+            <option>CTO</option>
+            <option>CEO</option>
           </select>
         </div>
         <div class="mb-5">
@@ -177,14 +205,15 @@ const saveImage = async () => {
           <label for="line manager" class="mb-3 block text-base font-medium text-[#07074D]">
             Line Manager
           </label>
-          <input
-            type="text"
+          <select
             name="line manager"
-            v-model="line_manager"
             id="line manager"
-            placeholder="Enter Line Manager"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-          />
+            v-model="line_manager"
+          >
+            <option disabled value="">Please select manager</option>
+            <option v-for="option in options" :key="option">{{ option }}</option>
+          </select>
         </div>
         <div class="mb-5">
           <label for="birthdate" class="mb-3 block text-base font-medium text-[#07074D]">

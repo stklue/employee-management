@@ -3,7 +3,8 @@ import { onMounted, ref, type Ref } from 'vue'
 import { useEmployeeStore } from '../stores/employee'
 import EmployeeFilter from '@/components/EmployeeFilter.vue'
 import EmployeeSort from '@/components/EmployeeSort.vue'
-// import OrgHierarchy from '@/components/OrgHierarchy.vue'
+import OrgHierarchy from '@/components/OrgHierarchy.vue'
+import { type Employee, emptyEmployee } from '@/types/employee'
 
 const store = useEmployeeStore()
 const loading = ref(false)
@@ -18,9 +19,12 @@ const getEmployee = async () => {
   names.value = []
 }
 
+const ceo: Ref<Employee> = ref(emptyEmployee)
+// store.filterEmployee('id', ceo.value.subordinates!)
 
 onMounted(async () => {
   loading.value = true
+  ceo.value = await store.getCEO()
   await store.getEmployees()
   loading.value = false
 })
@@ -42,9 +46,7 @@ onMounted(async () => {
       <!-- Right Side -->
       <section class="flex-3 h-screen w-full px-10 pt-4 space-y-4">
         <!-- Search input -->
-        <form
-        @submit.prevent="getEmployee"
-        >
+        <form @submit.prevent="getEmployee">
           <label
             for="default-search"
             class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-gray-300"
@@ -83,7 +85,11 @@ onMounted(async () => {
             </button>
           </div>
         </form>
-        <div class="w-full text-end"><button @click="store.getEmployees" class="underline border-none px-4 text-lg  rounded-md">Fetch all</button></div>
+        <div class="w-full text-end">
+          <button @click="store.getEmployees" class="underline border-none px-4 text-lg rounded-md">
+            Fetch all
+          </button>
+        </div>
         <!-- Employee Table -->
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -148,6 +154,11 @@ onMounted(async () => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div v-if="loading === false" class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
+          <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
+          <OrgHierarchy :employee="ceo" />
         </div>
       </section>
     </div>

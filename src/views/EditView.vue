@@ -19,6 +19,7 @@ const profile = ref(employee.value.profile_url)
 const birthdate = ref(employee.value.birthdate)
 const salary = ref(employee.value.salary)
 const line_manager = ref(employee.value.line_manager)
+const emp_subordinates: Ref<string[]> = ref([])
 const manager_subordinates: Ref<string[]> = ref([])
 const manager = ref(emptyEmployee)
 
@@ -33,6 +34,7 @@ onMounted(async () => {
   email.value = employee.value.email
   profile.value = employee.value.profile_url
   position.value = employee.value.position
+  emp_subordinates.value = employee.value.subordinates??[]
   salary.value = employee.value.salary
   birthdate.value = employee.value.birthdate
   line_manager.value = employee.value.line_manager
@@ -71,6 +73,7 @@ const submit = async () => {
       position: position.value,
       profile_url: profile.value,
       created_at: employee.value.created_at,
+      subordinates: employee.value.subordinates,
       salary: salary.value,
       line_manager: line_manager.value
     }
@@ -78,12 +81,14 @@ const submit = async () => {
     if (!valid.value) {
       alert('Employee cannot be their own line manager.')
     } else {
-      if (line_manager.value!.length > 0) {
-        manager.value = await store.getManagerByName(line_manager.value!)
-        manager_subordinates.value.push(employee.value.id)
-        manager.value.subordinates = manager_subordinates.value
-        console.log(manager.value)
-        await store.updateManagerSub(manager.value)
+      if (line_manager.value !== null) {
+        if (line_manager.value!.length > 0) {
+          manager.value = await store.getManagerByName(line_manager.value!)
+          manager_subordinates.value = manager.value.subordinates 
+          manager_subordinates.value.push(employee.value.id)
+          manager.value.subordinates = manager_subordinates.value
+          await store.updateManagerSub(manager.value)
+        }
       }
       loading.value = 'Loading'
       store.updateEmployee(e)
@@ -200,7 +205,8 @@ const saveImage = async () => {
             <option disabled value="">Please select position</option>
             <option>Developer</option>
             <option>Jr Developer</option>
-            <option>Line Manager</option>
+            <option>Manager</option>
+            <option>CEO</option>
           </select>
         </div>
         <div class="mb-5">

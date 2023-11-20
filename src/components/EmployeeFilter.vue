@@ -22,7 +22,7 @@ const resetFilters = () => {
           name="developer"
           value="Developer"
           v-model="filters"
-          v-on:change="store.filterEmployee(filters)"
+          v-on:change="store.filterEmployee('position', filters)"
           class="h-5 w-5 rounded border-gray-300"
           
         />
@@ -36,7 +36,7 @@ const resetFilters = () => {
           name="jr developer"
           value="Jr Developer"
           v-model="filters"
-          v-on:change="store.filterEmployee(filters)"
+          v-on:change="store.filterEmployee('position', filters)"
           class="h-5 w-5 rounded border-gray-300"
           
         />
@@ -50,7 +50,7 @@ const resetFilters = () => {
           name="line_manager"
           value="Line Manager"
           v-model="filters"
-          v-on:change="store.filterEmployee(filters)"
+          v-on:change="store.filterEmployee('position',filters)"
           class="h-5 w-5 rounded border-gray-300"
           
         />

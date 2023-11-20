@@ -17,19 +17,37 @@ export interface HierarchyNode {
 
 export const useEmployeeStore = defineStore('employee', () => {
   const employees: Ref<Employee[]> = ref([])
+  const subs: Ref<Employee[]> = ref([])
+  const ceo: Ref<Employee> = ref(emptyEmployee)
   type State = 'Initial' | 'Successfull' | 'Fail'
   const state: Ref<State> = ref('Initial')
 
-  const filterEmployee = async (fParam: string[]) => {
+  const filterEmployee = async (col: string, fParam: string[]) => {
     try {
       if (fParam.length < 1) {
         await getEmployees()
         return
       }
-      const { data } = await supabase.from('employees').select('*').in('position', fParam)
+      const { data } = await supabase.from('employees').select('*').in(col, fParam)
       employees.value = data as unknown as Employee[]
     } catch (e) {
       console.log(e)
+    }
+  }
+  const getSubordinates = async (fParam: string[]): Promise<Employee[]> => {
+    try {
+      if (fParam === null) {
+        return []
+      }
+      const { data } = await supabase.from('employees').select('*').in('id', fParam)
+      subs.value = data as unknown as Employee[]
+      if (subs.value.length < 1) {
+        return []
+      }
+      return subs.value
+    } catch (e) {
+      // console.log(e)
+      return []
     }
   }
 
@@ -54,6 +72,18 @@ export const useEmployeeStore = defineStore('employee', () => {
       employees.value = data as unknown as Employee[]
     } catch (e) {
       console.log(e)
+    }
+  }
+
+  async function getCEO() {
+    // const employee: Ref<Employee> = ref(emptyEmployee)
+    try {
+      const { data } = await supabase.from('employees').select().eq('position', 'CEO').single()
+      ceo.value = data as unknown as Employee
+      return ceo.value
+    } catch (e) {
+      console.log(e)
+      return emptyEmployee
     }
   }
 
@@ -92,7 +122,9 @@ export const useEmployeeStore = defineStore('employee', () => {
 
   async function createEmployee(employee: Employee) {
     try {
-      await supabase.from('employees').insert(employee)
+      console.log('Creating employee: ', employee)
+
+      // await supabase.from('employees').insert(employee)
     } catch (e) {
       console.log(e)
     }
@@ -109,10 +141,7 @@ export const useEmployeeStore = defineStore('employee', () => {
   }
   async function updateManagerSub(man: Employee) {
     try {
-       await supabase
-        .from('employees')
-        .update({ subordinates: man.subordinates })
-        .eq('id', man.id)
+      await supabase.from('employees').update({ subordinates: man.subordinates }).eq('id', man.id)
 
       state.value = 'Successfull'
     } catch (e) {
@@ -160,10 +189,14 @@ export const useEmployeeStore = defineStore('employee', () => {
     getEmployees,
     createEmployee,
     state,
+    getCEO,
+    ceo,
     filterEmployee,
     getEmployeeByName,
     lte10000,
+    getSubordinates,
     gte20000,
+    subs,
     sortSalary,
     getEmployee,
     deleteEmployee,

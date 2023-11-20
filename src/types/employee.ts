@@ -10,8 +10,14 @@ export interface Employee {
   salary: number
   line_manager?: string
   created_at?: Date
-  subordinates?: string[]
+  subordinates: string[]
 }
+
+
+export interface EmployeeView  {
+   emp: Employee 
+   children: Employee[]
+}  
 
 export const emptyEmployee = {
   id: '',

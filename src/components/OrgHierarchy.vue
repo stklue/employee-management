@@ -1,51 +1,45 @@
 <script setup lang="ts">
-// import type { Employee } from '@/types/employee'
-// import { useEmployeeStore } from '@/stores/employee'
+import type { Employee } from '@/types/employee'
+import { useEmployeeStore } from '@/stores/employee'
+import { onMounted, ref, type Ref } from 'vue'
 
-// defineProps<Props>()
+const store = useEmployeeStore()
+const props = defineProps<Props>()
 
-// const store = useEmployeeStore()
-// interface Props {
-//   employee: Employee
-//   subordinates: Employee2[]
-// }
+interface Props {
+  employee: Employee
+}
 
+const subos: Ref<Employee[]> = ref([])
 
+const loading = ref(true)
+
+const loadedSuccess = async () => {
+  loading.value = true
+  subos.value = await store.getSubordinates(props.employee.subordinates)
+  loading.value = false
+}
+onMounted(async () => {
+  await loadedSuccess()
+  // console.log('Subos: ', store.subs)
+})
 </script>
 
 <template>
-  <div class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
-    <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
-
-    <div class="tree">
-      <ul>
-        <!-- CEO -->
-        <li>
-          <span class="text-blue-500">CEO</span>
-          <ul>
+  <div v-if="loading === false" class="ml-4">
+    <ul>
+      <li>
+        <span v-if="employee.position === 'CEO'" class="text-blue-500">{{ employee.name }}</span>
+        <div v-if="employee.subordinates !== null">
+          <ul v-for="sub in subos " :key="sub.id">
             <!-- Manager 1 -->
-            <li>
-              <span class="text-green-500">Manager 1</span>
-              <ul>
-                <!-- Employee 1 -->
-                <li><span class="text-gray-700">Employee 1</span></li>
-                <!-- Employee 2 -->
-                <li><span class="text-gray-700">Employee 2</span></li>
-              </ul>
+            <li class="ml-4">
+              <span class="text-green-500">{{ sub.name }}</span>
             </li>
-            <!-- Manager 2 -->
-            <li>
-              <span class="text-green-500">Manager 2</span>
-              <ul>
-                <!-- Employee 3 -->
-                <li><span class="text-gray-700">Employee 3</span></li>
-                <!-- Employee 4 -->
-                <li><span class="text-gray-700">Employee 4</span></li>
-              </ul>
-            </li>
+            <OrgHierarchy :employee="sub" />
           </ul>
-        </li>
-      </ul>
-    </div>
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
