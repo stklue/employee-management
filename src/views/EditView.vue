@@ -38,6 +38,7 @@ onMounted(async () => {
 
 watch(
   () => route.params.id,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_, __) => {
     if (route.name === 'EditView') {
       employee.value = await store.getEmployee(route.params.id as string)

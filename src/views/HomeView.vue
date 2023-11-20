@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, type Ref } from 'vue'
 import { useEmployeeStore } from '../stores/employee'
 import EmployeeFilter from '@/components/EmployeeFilter.vue'
 import EmployeeSort from '@/components/EmployeeSort.vue'
@@ -9,6 +9,15 @@ const store = useEmployeeStore()
 const loading = ref(false)
 
 const searchVal = ref('')
+const names: Ref<string[]> = ref([])
+
+const getEmployee = async () => {
+  names.value.push(searchVal.value)
+  await store.getEmployeeByName(names.value)
+  searchVal.value = ''
+  names.value = []
+}
+
 
 onMounted(async () => {
   loading.value = true
@@ -33,7 +42,9 @@ onMounted(async () => {
       <!-- Right Side -->
       <section class="flex-3 h-screen w-full px-10 pt-4 space-y-4">
         <!-- Search input -->
-        <form>
+        <form
+        @submit.prevent="getEmployee"
+        >
           <label
             for="default-search"
             class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-gray-300"
@@ -58,7 +69,8 @@ onMounted(async () => {
             </div>
             <input
               type="search"
-              id="default-search"
+              id="search"
+              v-model="searchVal"
               class="block p-4 pl-10 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search for employees"
               required
@@ -71,6 +83,7 @@ onMounted(async () => {
             </button>
           </div>
         </form>
+        <div class="w-full text-end"><button @click="store.getEmployees" class="underline border-none px-4 text-lg  rounded-md">Fetch all</button></div>
         <!-- Employee Table -->
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
