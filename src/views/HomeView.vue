@@ -28,6 +28,8 @@ onMounted(async () => {
   await store.getEmployees()
   loading.value = false
 })
+
+const showTable = ref(false)
 </script>
 
 <template>
@@ -85,13 +87,27 @@ onMounted(async () => {
             </button>
           </div>
         </form>
-        <div class="w-full text-end">
-          <button @click="store.getEmployees" class="underline border-none px-4 text-lg rounded-md">
-            Fetch all
-          </button>
+        <div class="flex justify-between">
+          <div class="w-full">
+            <label for="show" class="m-2">Show table</label>
+            <input
+              v-model="showTable"
+              name="show"
+              type="checkbox"
+              class="border-none px-4 text-lg rounded-md"
+            />
+          </div>
+          <div class="w-full text-end">
+            <button
+              @click="store.getEmployees"
+              class="underline border-none px-4 text-lg rounded-md"
+            >
+              Fetch all
+            </button>
+          </div>
         </div>
         <!-- Employee Table -->
-        <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div v-if="showTable" class="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead
               class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
@@ -155,10 +171,11 @@ onMounted(async () => {
             </tbody>
           </table>
         </div>
-
-        <div v-if="loading === false" class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
-          <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
-          <OrgHierarchy :employee="ceo" />
+        <div v-else>
+          <div v-if="loading === false" class="w-full mx-auto p-6">
+            <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
+            <OrgHierarchy :employee="ceo" />
+          </div>
         </div>
       </section>
     </div>

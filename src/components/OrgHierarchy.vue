@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Employee } from '@/types/employee'
+import  EmployeeCard from '@/components/EmployeeCard.vue'
 import { useEmployeeStore } from '@/stores/employee'
 import { onMounted, ref, type Ref } from 'vue'
 
@@ -26,15 +27,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="loading === false" class="ml-4">
+  <div v-if="loading === false" class="ml-8">
     <ul>
-      <li>
-        <span v-if="employee.position === 'CEO'" class="text-blue-500">{{ employee.name }}</span>
+      <li class="mb-2">
+        <EmployeeCard v-if="employee.position === 'CEO'" :employee="employee" />
         <div v-if="employee.subordinates !== null">
           <ul v-for="sub in subos " :key="sub.id">
             <!-- Manager 1 -->
-            <li class="ml-4">
-              <span class="text-green-500">{{ sub.name }}</span>
+            <li class="ml-10 mb-2">
+              <EmployeeCard :employee="sub" />
             </li>
             <OrgHierarchy :employee="sub" />
           </ul>
