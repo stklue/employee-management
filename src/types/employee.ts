@@ -1,5 +1,5 @@
 export interface Employee {
-  id: string
+  id?: number
   name: string
   email: string
   surname: string
@@ -20,7 +20,7 @@ export interface EmployeeView  {
 }  
 
 export const emptyEmployee = {
-  id: '',
+  id: -1,
   name: '',
   surname: '',
   email: '',

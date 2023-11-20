@@ -39,7 +39,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       if (fParam === null) {
         return []
       }
-      const { data } = await supabase.from('employees').select('*').in('id', fParam)
+      const { data } = await supabase.from('employees').select('*').in('employeeno', fParam)
       subs.value = data as unknown as Employee[]
       if (subs.value.length < 1) {
         return []
@@ -74,7 +74,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       console.log(e)
     }
   }
-
+// TODO: add root Parameter
   async function getCEO() {
     // const employee: Ref<Employee> = ref(emptyEmployee)
     try {
@@ -99,7 +99,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       return emptyEmployee
     }
   }
-  async function deleteEmployee(id: string) {
+  async function deleteEmployee(id: number) {
     try {
       await supabase.from('employees').delete().eq('id', id)
     } catch (e) {
@@ -123,9 +123,10 @@ export const useEmployeeStore = defineStore('employee', () => {
   async function createEmployee(employee: Employee) {
     try {
       console.log('Creating employee: ', employee)
-
-      // await supabase.from('employees').insert(employee)
+      await supabase.from('employees').insert(employee)
+      state.value = 'Successfull'
     } catch (e) {
+      state.value = 'Fail'
       console.log(e)
     }
   }
@@ -159,8 +160,8 @@ export const useEmployeeStore = defineStore('employee', () => {
   }
   const tree: Ref<Array<HierarchyNode>> = ref([])
 
-  const getManagerByName = async (man: string): Promise<Employee> => {
-    const { data } = await supabase.from('employees').select().eq('name', man).single()
+  const getManagerByPos = async (man: string): Promise<Employee> => {
+    const { data } = await supabase.from('employees').select().eq('position', man).single()
     return data as unknown as Employee
   }
 
@@ -201,7 +202,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     getEmployee,
     deleteEmployee,
     updateEmployee,
-    getManagerByName,
+    getManagerByPos,
     updateManagerSub,
     buildOrgHierachy,
     tree

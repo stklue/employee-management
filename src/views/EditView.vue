@@ -83,9 +83,9 @@ const submit = async () => {
     } else {
       if (line_manager.value !== null) {
         if (line_manager.value!.length > 0) {
-          manager.value = await store.getManagerByName(line_manager.value!)
+          manager.value = await store.getManagerByPos(line_manager.value!)
           manager_subordinates.value = manager.value.subordinates 
-          manager_subordinates.value.push(employee.value.id)
+          manager_subordinates.value.push(employee.value.employeeno)
           manager.value.subordinates = manager_subordinates.value
           await store.updateManagerSub(manager.value)
         }
@@ -104,7 +104,7 @@ const submit = async () => {
 
 const router = useRouter()
 
-const deleteEmp = async (id: string) => {
+const deleteEmp = async (id: number) => {
   await store.deleteEmployee(id)
   router.replace('/')
 }
@@ -149,6 +149,18 @@ const saveImage = async () => {
   const { data } = supabase.storage.from('employees').getPublicUrl(dataPath.path)
 
   return data.publicUrl
+}
+let h = new Map<string, string[]>([
+  ['Developer', ['Manager', 'CTO', 'CEO']],
+  ['Manager', ['CTO', 'CEO']],
+  ['CTO', ['CEO']],
+  ['CEO', []]
+])
+
+const options: Ref<string[]> = ref([])
+
+const lineManagerOptions = () => {
+  options.value = h.get(position.value) as string[]
 }
 </script>
 
@@ -197,6 +209,7 @@ const saveImage = async () => {
             Position
           </label>
           <select
+            @change="lineManagerOptions"
             name="position"
             id="position"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
@@ -204,8 +217,8 @@ const saveImage = async () => {
           >
             <option disabled value="">Please select position</option>
             <option>Developer</option>
-            <option>Jr Developer</option>
             <option>Manager</option>
+            <option>CTO</option>
             <option>CEO</option>
           </select>
         </div>
@@ -226,14 +239,17 @@ const saveImage = async () => {
           <label for="line manager" class="mb-3 block text-base font-medium text-[#07074D]">
             Line Manager
           </label>
-          <input
-            type="text"
+          <span v-if="position === 'CEO'">You are the Boss</span>
+          <select
+            v-else
             name="line manager"
-            v-model="line_manager"
             id="line manager"
-            placeholder="Enter Line Manager"
             class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
-          />
+            v-model="line_manager"
+          >
+            <option disabled value="">Please select manager</option>
+            <option v-for="option in options" :key="option">{{ option }}</option>
+          </select>
         </div>
         <div class="mb-5">
           <label for="birthdate" class="mb-3 block text-base font-medium text-[#07074D]">
@@ -264,7 +280,7 @@ const saveImage = async () => {
         <div>
           <button
             type="button"
-            @click="deleteEmp(employee.id)"
+            @click="deleteEmp(employee.id!)"
             class="hover:shadow-form rounded-md bg-[#f17464] my-4 w-full py-3 px-8 text-base font-semibold text-white outline-none"
           >
             Delete Employee

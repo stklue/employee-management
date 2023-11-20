@@ -5,7 +5,9 @@ import DropZone from '@/components/DropZone.vue'
 import { uuid } from 'vue3-uuid'
 import { supabase } from '../lib/supabaseClient'
 import { emptyEmployee, type Employee } from '@/types/employee'
+import { useRouter } from 'vue-router'
 const store = useEmployeeStore()
+const router   = useRouter()
 
 const name = ref('')
 const surname = ref('')
@@ -14,7 +16,6 @@ const position = ref('')
 const profile = ref('')
 const birthdate = ref('')
 const salary = ref(0)
-const uuid_id = ref(uuid.v4())
 const uuid_employee = ref(uuid.v4())
 const line_manager = ref('')
 const manager_subordinates: Ref<string[]> = ref([])
@@ -26,23 +27,22 @@ const employee: Ref<Employee> = ref(emptyEmployee)
 const submit = async () => {
   if (
     name.value.length > 0 &&
-    surname.value.length &&
-    email.value.length &&
-    position.value.length &&
-    birthdate.value.length
+    surname.value.length > 0 &&
+    email.value.length > 0&&
+    position.value.length > 0 &&
+    birthdate.value.length > 0
   ) {
     if (dropzoneFile.value !== undefined) {
       profile.value = (await saveImage())!
     }
 
     const emp = {
-      id: uuid_id.value,
       employeeno: uuid_employee.value,
       name: name.value,
       email: email.value,
       surname: surname.value,
       birthdate: birthdate.value,
-      profileUrl: profile.value,
+      profile_url: profile.value,
       position: position.value,
       line_manager: line_manager.value,
       created_at: new Date(),
@@ -50,40 +50,29 @@ const submit = async () => {
       subordinates: []
     }
     employee.value = emp
-    validateLineManager()
-    if (!valid.value) {
-      alert('Employee cannot be their own line manager.')
-    } else {
-      if (line_manager.value !== null) {
-        if (line_manager.value!.length > 0) {
-          manager.value = await store.getManagerByName(line_manager.value!)
-          manager_subordinates.value = manager.value.subordinates
-          manager_subordinates.value.push(employee.value.id)
-          manager.value.subordinates = manager_subordinates.value
-          await store.updateManagerSub(manager.value)
-        }
+    
+    if (line_manager.value !== null) {
+      if (line_manager.value!.length > 0) {
+        manager.value = await store.getManagerByPos(line_manager.value!)
+        manager_subordinates.value = manager.value.subordinates ?? []
+        manager_subordinates.value.push(employee.value.employeeno!)
+        manager.value.subordinates = manager_subordinates.value
+        await store.updateManagerSub(manager.value)
       }
-      loading.value = 'Loading'
-      store.createEmployee(employee.value)
-      loading.value = 'Finished'
-      setInterval(() => {
-        store.state = 'Initial'
-      }, 2000)
     }
-  } else {
+    loading.value = 'Loading'
+    await store.createEmployee(employee.value)
+    loading.value = 'Finished'
+    setInterval(() => {
+      store.state = 'Initial'
+    }, 2000)
+    router.replace('/')
+    
+  }else {
     alert('Fields Should not be empty')
   }
 }
 
-const valid = ref(false)
-
-const validateLineManager = () => {
-  if (line_manager.value?.includes(name.value) || line_manager.value?.includes(surname.value)) {
-    valid.value = false
-  } else {
-    valid.value = true
-  }
-}
 
 const dropzoneFile: Ref<File | undefined | null> = ref()
 const uploaded = ref(false)
