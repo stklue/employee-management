@@ -150,9 +150,10 @@ const saveImage = async () => {
 
   return data.publicUrl
 }
+
 let h = new Map<string, string[]>([
-  ['Developer', ['Manager', 'CTO', 'CEO']],
-  ['Manager', ['CTO', 'CEO']],
+  ['Developer', ['Manager']],
+  ['Manager', ['CTO']],
   ['CTO', ['CEO']],
   ['CEO', []]
 ])
