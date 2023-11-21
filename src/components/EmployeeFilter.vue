@@ -4,8 +4,15 @@ import { ref } from "vue";
 
 const store = useEmployeeStore() 
 const filters = ref([])
+let h = new Map<string, string[]>([
+  ['Developer', ['Manager']],
+  ['Manager', ['Manager']],
+  ['CTO', ['CEO']],
+  ['CEO', []]
+])
 const resetFilters = () => {
   filters.value = []
+  store.rootNode = 'CEO'
   store.getEmployees()
 }
 </script>

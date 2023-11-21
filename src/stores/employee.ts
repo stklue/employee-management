@@ -3,24 +3,19 @@ import { defineStore } from 'pinia'
 import { supabase } from '../lib/supabaseClient'
 import { emptyEmployee, type Employee } from '../types/employee'
 
-export interface EmployeeGraph {
-  employees: Array<Employee>
-}
 
-export const emptyGraph = { employees: [] } as EmployeeGraph
-
-export interface HierarchyNode {
-  manager: Employee
-  id: string
-  children: Array<Employee>
-}
 
 export const useEmployeeStore = defineStore('employee', () => {
   const employees: Ref<Employee[]> = ref([])
   const subs: Ref<Employee[]> = ref([])
   const ceo: Ref<Employee> = ref(emptyEmployee)
+  const rootNode  = ref('CEO')
   type State = 'Initial' | 'Successfull' | 'Fail'
   const state: Ref<State> = ref('Initial')
+  
+  type DataManipulation = 'Nothing' | 'Search' | 'Filter' | 'Sort'
+  const dataM: Ref<DataManipulation> = ref('Nothing')
+
 
   const filterEmployee = async (col: string, fParam: string[]) => {
     try {
@@ -30,6 +25,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       }
       const { data } = await supabase.from('employees').select('*').in(col, fParam)
       employees.value = data as unknown as Employee[]
+      subs.value = data as unknown as Employee[]
     } catch (e) {
       console.log(e)
     }
@@ -41,6 +37,7 @@ export const useEmployeeStore = defineStore('employee', () => {
       }
       const { data } = await supabase.from('employees').select('*').in('employeeno', fParam)
       subs.value = data as unknown as Employee[]
+
       if (subs.value.length < 1) {
         return []
       }
@@ -74,11 +71,9 @@ export const useEmployeeStore = defineStore('employee', () => {
       console.log(e)
     }
   }
-// TODO: add root Parameter
   async function getCEO() {
-    // const employee: Ref<Employee> = ref(emptyEmployee)
     try {
-      const { data } = await supabase.from('employees').select().eq('position', 'CEO').single()
+      const { data } = await supabase.from('employees').select().eq('position', rootNode.value).single()
       ceo.value = data as unknown as Employee
       return ceo.value
     } catch (e) {
@@ -122,7 +117,6 @@ export const useEmployeeStore = defineStore('employee', () => {
 
   async function createEmployee(employee: Employee) {
     try {
-      console.log('Creating employee: ', employee)
       await supabase.from('employees').insert(employee)
       state.value = 'Successfull'
     } catch (e) {
@@ -158,32 +152,13 @@ export const useEmployeeStore = defineStore('employee', () => {
     const { data } = await supabase.from('employees').select().in('name', names)
     employees.value = data as unknown as Employee[]
   }
-  const tree: Ref<Array<HierarchyNode>> = ref([])
 
   const getManagerByPos = async (man: string): Promise<Employee> => {
     const { data } = await supabase.from('employees').select().eq('position', man).single()
     return data as unknown as Employee
   }
 
-  const buildOrgHierachy = async () => {
-    // Employee[] => HierarchyNode[]
-    const line_managers: string[] = []
-    employees.value.forEach((e) => {
-      if (!line_managers.includes(e.line_manager as string)) {
-        if (e.line_manager !== null) {
-          line_managers.push(e.line_manager as string)
-        }
-      }
-    })
-
-    line_managers.forEach(async (man) => {
-      const { data } = await supabase.from('employees').select('*').eq('line_manager', man)
-      const x: Array<Employee> = data as unknown as Employee[]
-      const emp = employees.value.find((e) => e.name === man)
-      const h = { manager: emp, id: man, children: x } as HierarchyNode
-      tree.value.push(h)
-    })
-  }
+  
 
   return {
     employees,
@@ -191,6 +166,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     createEmployee,
     state,
     getCEO,
+    rootNode,
     ceo,
     filterEmployee,
     getEmployeeByName,
@@ -204,7 +180,6 @@ export const useEmployeeStore = defineStore('employee', () => {
     updateEmployee,
     getManagerByPos,
     updateManagerSub,
-    buildOrgHierachy,
-    tree
+    dataM
   }
 })

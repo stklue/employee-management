@@ -13,6 +13,7 @@ const searchVal = ref('')
 const names: Ref<string[]> = ref([])
 
 const getEmployee = async () => {
+  store.dataM = 'Search'
   names.value.push(searchVal.value)
   await store.getEmployeeByName(names.value)
   searchVal.value = ''
@@ -172,10 +173,20 @@ const showTable = ref(false)
           </table>
         </div>
         <div v-else>
-          <div v-if="loading === false" class="w-full mx-auto p-6">
-            <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
-            <OrgHierarchy :employee="ceo" />
+          <div v-if="store.dataM === 'Nothing'">
+            <div v-if="loading === false" class="w-full mx-auto p-6">
+              <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
+              <OrgHierarchy :employee="ceo" />
+            </div>
           </div>
+          
+          <div v-if="store.dataM === 'Search'">
+            <div v-if="loading === false" class="w-full mx-auto p-6">
+              <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
+              <OrgHierarchy :employees="store.employees" />
+            </div>
+          </div>  
+          
         </div>
       </section>
     </div>
