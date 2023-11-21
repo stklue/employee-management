@@ -2,30 +2,44 @@ import { ref, type Ref } from 'vue'
 import { defineStore } from 'pinia'
 import { supabase } from '../lib/supabaseClient'
 import { emptyEmployee, type Employee } from '../types/employee'
-
-
+import { root } from 'postcss'
 
 export const useEmployeeStore = defineStore('employee', () => {
   const employees: Ref<Employee[]> = ref([])
   const subs: Ref<Employee[]> = ref([])
   const ceo: Ref<Employee> = ref(emptyEmployee)
-  const rootNode  = ref('CEO')
+  const rootNode = ref('CEO')
   type State = 'Initial' | 'Successfull' | 'Fail'
   const state: Ref<State> = ref('Initial')
-  
+
   type DataManipulation = 'Nothing' | 'Search' | 'Filter' | 'Sort'
   const dataM: Ref<DataManipulation> = ref('Nothing')
 
-
   const filterEmployee = async (col: string, fParam: string[]) => {
+    dataM.value = 'Filter'
+    if (fParam.includes('CEO')) {
+      rootNode.value = 'CEO'
+      ceo.value = await getCEO()
+    } else if (fParam.includes('CTO') && !fParam.includes('CEO')) {
+      rootNode.value = 'CTO'
+      ceo.value = await getCEO()
+    } else if (fParam.includes('Manager') && (!fParam.includes('CEO') || !fParam.includes('CTO'))) {
+      rootNode.value = 'Manager'
+      ceo.value = await getCEO()
+    } else {
+      rootNode.value = 'Developer'
+      ceo.value = await getCEO()
+    }
+
     try {
       if (fParam.length < 1) {
+        dataM.value = 'Nothing'
         await getEmployees()
         return
       }
       const { data } = await supabase.from('employees').select('*').in(col, fParam)
       employees.value = data as unknown as Employee[]
-      subs.value = data as unknown as Employee[]
+     
     } catch (e) {
       console.log(e)
     }
@@ -35,7 +49,11 @@ export const useEmployeeStore = defineStore('employee', () => {
       if (fParam === null) {
         return []
       }
-      const { data } = await supabase.from('employees').select('*').in('employeeno', fParam)
+      const { data } = await supabase
+        .from('employees')
+        .select('*')
+        // .eq('id', ceo.value.id)
+        .in('employeeno', fParam)
       subs.value = data as unknown as Employee[]
 
       if (subs.value.length < 1) {
@@ -73,7 +91,11 @@ export const useEmployeeStore = defineStore('employee', () => {
   }
   async function getCEO() {
     try {
-      const { data } = await supabase.from('employees').select().eq('position', rootNode.value).single()
+      const { data } = await supabase
+        .from('employees')
+        .select()
+        .eq('position', rootNode.value)
+        .single()
       ceo.value = data as unknown as Employee
       return ceo.value
     } catch (e) {
@@ -157,8 +179,6 @@ export const useEmployeeStore = defineStore('employee', () => {
     const { data } = await supabase.from('employees').select().eq('position', man).single()
     return data as unknown as Employee
   }
-
-  
 
   return {
     employees,

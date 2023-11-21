@@ -24,6 +24,7 @@ const ceo: Ref<Employee> = ref(emptyEmployee)
 // store.filterEmployee('id', ceo.value.subordinates!)
 
 onMounted(async () => {
+  store.dataM = 'Nothing'
   loading.value = true
   ceo.value = await store.getCEO()
   await store.getEmployees()
@@ -184,6 +185,12 @@ const showTable = ref(false)
             <div v-if="loading === false" class="w-full mx-auto p-6">
               <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
               <OrgHierarchy :employees="store.employees" />
+            </div>
+          </div>  
+          <div v-if="store.dataM === 'Filter'">
+            <div v-if="loading === false" class="w-full mx-auto p-6">
+              <h1 class="text-2xl font-semibold mb-4">Employee Tree</h1>
+              <OrgHierarchy :employee="ceo" />
             </div>
           </div>  
           

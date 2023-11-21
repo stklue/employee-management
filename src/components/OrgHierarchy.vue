@@ -17,13 +17,18 @@ const subos: Ref<Employee[]> = ref([])
 const loading = ref(true)
 
 const loadedSuccess = async () => {
-  loading.value = true
-  subos.value = await store.getSubordinates(props.employee!.subordinates)
-  loading.value = false
+  if (store.dataM === 'Filter') {
+    loading.value = true
+    subos.value = await store.getSubordinates(props.employee!.subordinates)
+    loading.value = false
+  } else {
+    loading.value = true
+    subos.value = await store.getSubordinates(props.employee!.subordinates)
+    loading.value = false
+  }
 }
 onMounted(async () => {
   await loadedSuccess()
-  // console.log('Subos: ', store.subs)
 })
 </script>
 
@@ -52,4 +57,25 @@ onMounted(async () => {
       <EmployeeCard :employee="emp!" />
     </div>
   </div>
+  <div v-if="loading === false && store.dataM === 'Filter'">
+    <ul>
+      <li class="mb-2">
+        <EmployeeCard v-if="employee!.position === store.rootNode" :employee="employee!" />
+        <div v-if="employee!.subordinates !== null">
+          <ul v-for="sub in subos" :key="sub.id">
+            <li class="flex ml-8 mb-2">
+              <div>
+                <img class="h-18 w-12" src="@/assets/hierarchy.svg" />
+              </div>
+              <EmployeeCard :employee="sub" />
+            </li>
+            <OrgHierarchy :employee="sub" />
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <!-- <div v-for="emp in employees!" :key="emp.id">
+      <EmployeeCard :employee="emp!" />
+    </div> -->
 </template>
